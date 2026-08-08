@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon Employee-Management/server.js"
+    "dev": "nodemon Employee-Management/server.js",
+    "benchmark": "node Employee-Management/benchmark.js"
   },
   "keywords": [],
   "author": "",
