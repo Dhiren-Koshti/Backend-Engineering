@@ -1,36 +1,37 @@
 const AppError = require("../utils/AppError");
 
-// In-memory employee array acting as database
-const employees = [];
+// In-memory data store using JavaScript Maps for O(1) time complexity
+const employeesMap = new Map(); // id -> employee object
+const emailMap = new Map();     // email.toLowerCase() -> id
 let nextId = 1;
 
 /**
- * Creates a new employee with auto-increment ID and duplicate email validation.
+ * Creates a new employee in O(1) time.
  * @param {Object} employeeData - { name, email, department, role }
  * @returns {Object} Newly created employee
  */
 const createEmployeeService = (employeeData) => {
   const { name, email, department, role } = employeeData;
+  const normalizedEmail = email.trim().toLowerCase();
 
-  // Check for duplicate email (case-insensitive)
-  const existingEmployee = employees.find(
-    (emp) => emp.email.toLowerCase() === email.trim().toLowerCase()
-  );
-
-  if (existingEmployee) {
+  // O(1) duplicate email lookup
+  if (emailMap.has(normalizedEmail)) {
     throw new AppError("Employee with this email already exists", 400);
   }
 
-  // Generate new employee with auto-increment ID
+  const id = nextId++;
   const newEmployee = {
-    id: nextId++,
+    id,
     name: name.trim(),
-    email: email.trim().toLowerCase(),
+    email: normalizedEmail,
     department: department.trim(),
     role: role.trim(),
   };
 
-  employees.push(newEmployee);
+  // O(1) insertion in both maps
+  employeesMap.set(id, newEmployee);
+  emailMap.set(normalizedEmail, id);
+
   return newEmployee;
 };
 
@@ -39,16 +40,17 @@ const createEmployeeService = (employeeData) => {
  * @returns {Array} List of all employees
  */
 const getAllEmployeesService = () => {
-  return employees;
+  return Array.from(employeesMap.values());
 };
 
 /**
- * Retrieves a single employee by ID.
+ * Retrieves a single employee by ID in O(1) time.
  * @param {number} id - Employee ID
  * @returns {Object} Employee object
  */
 const getEmployeeByIdService = (id) => {
-  const employee = employees.find((emp) => emp.id === Number(id));
+  const numericId = Number(id);
+  const employee = employeesMap.get(numericId); // O(1) lookup
 
   if (!employee) {
     throw new AppError("Employee not found", 404);
@@ -58,30 +60,32 @@ const getEmployeeByIdService = (id) => {
 };
 
 /**
- * Updates an existing employee by ID.
+ * Updates an existing employee by ID in O(1) time.
  * @param {number} id - Employee ID
  * @param {Object} updateData - Object containing updated fields
  * @returns {Object} Updated employee object
  */
 const updateEmployeeService = (id, updateData) => {
   const numericId = Number(id);
-  const employee = employees.find((emp) => emp.id === numericId);
+  const employee = employeesMap.get(numericId); // O(1) lookup
 
   if (!employee) {
     throw new AppError("Employee not found", 404);
   }
 
-  // If email is being updated, check for duplicate email across other employees
+  // Handle email update and re-indexing in emailMap
   if (updateData.email !== undefined) {
-    const trimmedEmail = updateData.email.trim().toLowerCase();
-    const existingEmail = employees.find(
-      (emp) => emp.email === trimmedEmail && emp.id !== numericId
-    );
+    const newEmail = updateData.email.trim().toLowerCase();
+    const existingId = emailMap.get(newEmail); // O(1) lookup
 
-    if (existingEmail) {
+    if (existingId !== undefined && existingId !== numericId) {
       throw new AppError("Employee with this email already exists", 400);
     }
-    updateData.email = trimmedEmail;
+
+    // Update emailMap index
+    emailMap.delete(employee.email);
+    emailMap.set(newEmail, numericId);
+    updateData.email = newEmail;
   }
 
   // Trim string values in updateData
@@ -98,24 +102,28 @@ const updateEmployeeService = (id, updateData) => {
 };
 
 /**
- * Deletes an employee by ID.
+ * Deletes an employee by ID in O(1) time.
  * @param {number} id - Employee ID
  * @returns {Object} Deleted employee object
  */
 const deleteEmployeeService = (id) => {
   const numericId = Number(id);
-  const index = employees.findIndex((emp) => emp.id === numericId);
+  const employee = employeesMap.get(numericId); // O(1) lookup
 
-  if (index === -1) {
+  if (!employee) {
     throw new AppError("Employee not found", 404);
   }
 
-  const [deletedEmployee] = employees.splice(index, 1);
-  return deletedEmployee;
+  // O(1) deletion from both maps
+  emailMap.delete(employee.email);
+  employeesMap.delete(numericId);
+
+  return employee;
 };
 
 module.exports = {
-  employees,
+  employeesMap,
+  emailMap,
   createEmployeeService,
   getAllEmployeesService,
   getEmployeeByIdService,
