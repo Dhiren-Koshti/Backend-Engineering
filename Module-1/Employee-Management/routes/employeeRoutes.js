@@ -14,12 +14,25 @@ const {
   validateSearchQuery,
 } = require("../middlewares/validateEmployee");
 const validateId = require("../middlewares/validateId");
+const { authenticate, authorize } = require("../middlewares/authMiddleware");
 
-router.post("/", validateCreateEmployee, createEmployee);
+// Protect all employee routes with authentication middleware
+router.use(authenticate);
+
+// --- Read Operations (Accessible by both USER and ADMIN) ---
 router.get("/", getAllEmployees);
 router.get("/search", validateSearchQuery, searchEmployees);
 router.get("/:id", validateId, getEmployeeById);
-router.put("/:id", validateId, validateUpdateEmployee, updateEmployee);
-router.delete("/:id", validateId, deleteEmployee);
+
+// --- Mutation Operations (Restricted to ADMIN only) ---
+router.post("/", authorize("ADMIN"), validateCreateEmployee, createEmployee);
+router.put(
+  "/:id",
+  authorize("ADMIN"),
+  validateId,
+  validateUpdateEmployee,
+  updateEmployee
+);
+router.delete("/:id", authorize("ADMIN"), validateId, deleteEmployee);
 
 module.exports = router;
