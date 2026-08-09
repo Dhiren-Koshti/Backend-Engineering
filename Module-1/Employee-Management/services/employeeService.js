@@ -2,7 +2,7 @@ const AppError = require("../utils/AppError");
 
 // In-memory data store using JavaScript Maps for O(1) time complexity
 const employeesMap = new Map(); // id -> employee object
-const emailMap = new Map();     // email.toLowerCase() -> id
+const emailMap = new Map(); // email.toLowerCase() -> id
 let nextId = 1;
 
 /**
@@ -121,6 +121,54 @@ const deleteEmployeeService = (id) => {
   return employee;
 };
 
+/**
+ * Searches and filters employees with pagination.
+ * @param {Object} queryParams - { name, department, role, page, limit }
+ * @returns {Object} { data: Array, pagination: Object }
+ */
+const searchEmployeesService = (queryParams) => {
+  const { name, department, role, page = 1, limit = 10 } = queryParams;
+
+  const pageNum = Number(page);
+  const limitNum = Number(limit);
+
+  const allEmployees = Array.from(employeesMap.values());
+
+  const filteredEmployees = allEmployees.filter((emp) => {
+    if (name && !emp.name.toLowerCase().includes(name.trim().toLowerCase())) {
+      return false;
+    }
+    if (
+      department &&
+      emp.department.toLowerCase() !== department.trim().toLowerCase()
+    ) {
+      return false;
+    }
+    if (role && emp.role.toLowerCase() !== role.trim().toLowerCase()) {
+      return false;
+    }
+    return true;
+  });
+
+  const total = filteredEmployees.length;
+  const totalPages = total > 0 ? Math.ceil(total / limitNum) : 0;
+  const startIndex = (pageNum - 1) * limitNum;
+  const paginatedData = filteredEmployees.slice(
+    startIndex,
+    startIndex + limitNum
+  );
+
+  return {
+    data: paginatedData,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages,
+    },
+  };
+};
+
 module.exports = {
   employeesMap,
   emailMap,
@@ -129,4 +177,5 @@ module.exports = {
   getEmployeeByIdService,
   updateEmployeeService,
   deleteEmployeeService,
+  searchEmployeesService,
 };

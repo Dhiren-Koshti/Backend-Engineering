@@ -5,6 +5,7 @@ const {
   getEmployeeByIdService,
   updateEmployeeService,
   deleteEmployeeService,
+  searchEmployeesService,
 } = require("../services/employeeService");
 
 const createEmployee = asyncHandler(async (req, res, next) => {
@@ -61,10 +62,21 @@ const deleteEmployee = asyncHandler(async (req, res, next) => {
   });
 });
 
+const searchEmployees = asyncHandler(async (req, res, next) => {
+  const result = searchEmployeesService(req.query);
+
+  res.status(200).json({
+    success: true,
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
 module.exports = {
   createEmployee,
   getAllEmployees,
   getEmployeeById,
   updateEmployee,
   deleteEmployee,
+  searchEmployees,
 };
