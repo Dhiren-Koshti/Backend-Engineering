@@ -1,8 +1,5 @@
 const jwt = require("jsonwebtoken");
-
-const getJwtSecret = () =>
-  process.env.JWT_SECRET || "your_jwt_secret_key_change_in_production";
-const getJwtExpiresIn = () => process.env.JWT_EXPIRES_IN || "1d";
+const config = require("../config/config");
 
 /**
  * Generates a signed JWT token.
@@ -10,8 +7,8 @@ const getJwtExpiresIn = () => process.env.JWT_EXPIRES_IN || "1d";
  * @returns {string} JWT token string
  */
 const generateToken = (payload) => {
-  return jwt.sign(payload, getJwtSecret(), {
-    expiresIn: getJwtExpiresIn(),
+  return jwt.sign(payload, config.jwt.secret, {
+    expiresIn: config.jwt.expiresIn,
   });
 };
 
@@ -21,7 +18,7 @@ const generateToken = (payload) => {
  * @returns {Object} Decoded payload
  */
 const verifyToken = (token) => {
-  return jwt.verify(token, getJwtSecret());
+  return jwt.verify(token, config.jwt.secret);
 };
 
 module.exports = {

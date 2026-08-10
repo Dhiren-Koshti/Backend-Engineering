@@ -1,6 +1,8 @@
 const AppError = require("../utils/AppError");
 const { hashPassword, comparePassword } = require("../utils/passwordUtils");
 const { generateToken } = require("../utils/jwtUtils");
+const config = require("../config/config");
+const logger = require("../utils/logger");
 
 // In-memory data store for users
 const usersMap = new Map(); // id -> user object
@@ -11,11 +13,9 @@ let nextUserId = 1;
  * Seeds initial Admin user at server startup if it doesn't exist yet.
  */
 const seedAdminUser = async () => {
-  const adminEmail = (process.env.ADMIN_EMAIL || "admin@company.com")
-    .trim()
-    .toLowerCase();
-  const adminName = process.env.ADMIN_NAME || "Super Admin";
-  const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
+  const adminEmail = config.admin.email.trim().toLowerCase();
+  const adminName = config.admin.name;
+  const adminPassword = config.admin.password;
 
   if (!userEmailMap.has(adminEmail)) {
     const hashedPassword = await hashPassword(adminPassword);
@@ -32,7 +32,7 @@ const seedAdminUser = async () => {
     usersMap.set(id, adminUser);
     userEmailMap.set(adminEmail, id);
 
-    console.log(`[SEED] Admin user seeded successfully (${adminEmail})`);
+    logger.info(`[SEED] Admin user seeded successfully (${adminEmail})`);
   }
 };
 

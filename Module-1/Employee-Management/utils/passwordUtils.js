@@ -1,6 +1,5 @@
 const bcrypt = require("bcryptjs");
-
-const getSaltRounds = () => Number(process.env.SALT_ROUNDS) || 10;
+const config = require("../config/config");
 
 /**
  * Hashes a plain text password.
@@ -8,7 +7,7 @@ const getSaltRounds = () => Number(process.env.SALT_ROUNDS) || 10;
  * @returns {Promise<string>} Hashed password string
  */
 const hashPassword = async (password) => {
-  return await bcrypt.hash(password, getSaltRounds());
+  return await bcrypt.hash(password, config.saltRounds);
 };
 
 /**
