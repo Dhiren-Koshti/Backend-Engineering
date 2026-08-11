@@ -37,6 +37,16 @@ const seedAdminUser = async () => {
 };
 
 /**
+ * Resets user in-memory storage and re-seeds Super Admin for automated testing.
+ */
+const resetUserServiceState = async () => {
+  usersMap.clear();
+  userEmailMap.clear();
+  nextUserId = 1;
+  await seedAdminUser();
+};
+
+/**
  * Service for user registration.
  * Checks duplicate email, hashes password, assigns default role "USER", auto-increments ID.
  * @param {Object} userData - { name, email, password }
@@ -114,6 +124,7 @@ module.exports = {
   usersMap,
   userEmailMap,
   seedAdminUser,
+  resetUserServiceState,
   registerUserService,
   loginUserService,
 };

@@ -6,6 +6,15 @@ const emailMap = new Map(); // email.toLowerCase() -> id
 let nextId = 1;
 
 /**
+ * Resets employee in-memory storage and ID counter for automated testing.
+ */
+const resetEmployeeServiceState = () => {
+  employeesMap.clear();
+  emailMap.clear();
+  nextId = 1;
+};
+
+/**
  * Creates a new employee in O(1) time.
  * @param {Object} employeeData - { name, email, department, role }
  * @returns {Object} Newly created employee
@@ -172,6 +181,7 @@ const searchEmployeesService = (queryParams) => {
 module.exports = {
   employeesMap,
   emailMap,
+  resetEmployeeServiceState,
   createEmployeeService,
   getAllEmployeesService,
   getEmployeeByIdService,

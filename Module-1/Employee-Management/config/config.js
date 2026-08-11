@@ -1,5 +1,8 @@
 const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
+
+// Load .env.test if running in test environment, otherwise load .env
+const envFile = process.env.NODE_ENV === "test" ? ".env.test" : ".env";
+require("dotenv").config({ path: path.join(__dirname, "..", envFile) });
 
 /**
  * Validates presence of required environment variables.
@@ -19,7 +22,7 @@ const validateEnv = () => {
   if (missingVars.length > 0) {
     const missingKeys = missingVars.map((item) => item.key).join(", ");
     throw new Error(
-      `[FATAL CONFIG ERROR] Missing required environment variable(s): ${missingKeys}. Please check your .env file.`
+      `[FATAL CONFIG ERROR] Missing required environment variable(s): ${missingKeys}. Please check your ${envFile} file.`
     );
   }
 };
